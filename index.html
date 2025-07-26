@@ -1,110 +1,169 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Minecraft RCON Quick Panel</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quick Command Panel</title>
   <style>
     body {
-      background-color: #121212;
+      background-color: #111;
       color: #f1f1f1;
-      font-family: 'Segoe UI', sans-serif;
+      font-family: monospace;
       margin: 0;
       padding: 2rem;
     }
     h1 {
       text-align: center;
-      color: #00ffcc;
+      color: #00ffaa;
     }
-    .command-panel {
+    .section {
+      margin-bottom: 2rem;
+    }
+    .section-title {
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+    .cmd-row {
       display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      justify-content: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+      align-items: center;
     }
-    .button {
-      padding: 0.8rem 1.2rem;
-      background-color: #1e1e1e;
-      color: #fff;
-      border: 1px solid #00ffcc;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background-color 0.2s;
-    }
-    .button:hover {
-      background-color: #00ffcc;
-      color: #000;
-    }
-    .form {
-      margin-top: 2rem;
-      text-align: center;
-    }
-    input {
+    input, select {
       padding: 0.5rem;
-      margin: 0.3rem;
       background: #1e1e1e;
       color: #fff;
       border: 1px solid #333;
       border-radius: 4px;
+      flex: 1;
+    }
+    button {
+      padding: 0.5rem 1rem;
+      background-color: #00ffaa;
+      color: #000;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #00dd99;
     }
   </style>
 </head>
 <body>
-  <h1>⚡ Minecraft RCON Panel</h1>
+  <h1>⚡ Admin Command Panel</h1>
 
-  <div class="form">
-    <input type="text" id="player" placeholder="Player name" />
-    <input type="text" id="arg1" placeholder="Arg1" />
-    <input type="text" id="arg2" placeholder="Arg2" />
-    <input type="text" id="arg3" placeholder="Arg3" />
+  <div class="section">
+    <div class="section-title">Flame Commands</div>
+    <div class="cmd-row">
+      <input type="text" placeholder="Player" id="flamePlayer" />
+      <select id="flameType">
+        <option>burning</option><option>frost</option><option>earth</option><option>aquatic</option>
+        <option>gust</option><option>cosmic</option><option>shadow</option><option>life</option>
+        <option>dragon</option><option>storm</option><option>wealth</option><option>warden</option>
+        <option>wither</option>
+      </select>
+      <button onclick="send('flame set')">Set Flame</button>
+    </div>
+    <div class="cmd-row">
+      <input type="text" placeholder="Player" id="giveFlamePlayer" />
+      <select id="flameItem">
+        <option>match</option><option>mace</option><option>upgrader</option>
+        <option>shield</option><option>life</option><option>token</option><option>tradertoken</option>
+      </select>
+      <button onclick="send('flame give')">Give Flame Item</button>
+    </div>
   </div>
 
-  <div class="command-panel">
-    <button class="button" onclick="sendCmd('gamemode')">Gamemode</button>
-    <button class="button" onclick="sendCmd('give')">Give</button>
-    <button class="button" onclick="sendCmd('tp')">TP</button>
-    <button class="button" onclick="sendCmd('effect')">Effect</button>
-    <button class="button" onclick="sendCmd('attribute')">Attribute</button>
-    <button class="button" onclick="sendCmd('say')">Say</button>
+  <div class="section">
+    <div class="section-title">Operator</div>
+    <div class="cmd-row">
+      <input type="text" placeholder="Player to OP" id="opPlayer" />
+      <button onclick="send('op')">OP Player</button>
+    </div>
+    <div class="cmd-row">
+      <input type="text" placeholder="Player to Kick" id="kickPlayer" />
+      <button onclick="send('kick')">Kick</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Custom Enchant</div>
+    <div class="cmd-row">
+      <input type="text" placeholder="Enchantment" id="enchantName" />
+      <input type="text" placeholder="Level" id="enchantLevel" />
+      <button onclick="send('customenchant')">Test Enchant</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Other</div>
+    <div class="cmd-row">
+      <input type="text" placeholder="x y z" id="wardenXYZ" />
+      <button onclick="send('wardenboss')">Spawn Warden</button>
+    </div>
+    <div class="cmd-row">
+      <button onclick="send('enablenether')">Enable Nether</button>
+      <button onclick="send('disablenether')">Disable Nether</button>
+    </div>
+    <div class="cmd-row">
+      <button onclick="send('enablepvp')">Enable PVP</button>
+      <button onclick="send('disablepvp')">Disable PVP</button>
+    </div>
+    <div class="cmd-row">
+      <button onclick="send('prog1')">Trigger Prog1</button>
+    </div>
   </div>
 
   <script>
     const API_URL = "https://90116464-7343-4fb3-ad14-5b7f8def911b-00-1p92o521rbwip.kirk.replit.dev/api/command";
 
-    async function sendCmd(cmd) {
-      const player = document.getElementById('player').value;
-      const args = [
-        document.getElementById('arg1').value,
-        document.getElementById('arg2').value,
-        document.getElementById('arg3').value
-      ].filter(Boolean);
+    async function send(cmd) {
+      let args = [];
+      let player = "";
 
-      if (!player) {
-        alert("Enter player name.");
-        return;
+      switch (cmd) {
+        case 'op':
+          player = document.getElementById('opPlayer').value;
+          break;
+        case 'kick':
+          player = document.getElementById('kickPlayer').value;
+          break;
+        case 'flame set':
+          player = document.getElementById('flamePlayer').value;
+          args = [document.getElementById('flameType').value];
+          break;
+        case 'flame give':
+          player = document.getElementById('giveFlamePlayer').value;
+          args = [document.getElementById('flameItem').value];
+          break;
+        case 'customenchant':
+          player = "@s";
+          args = [document.getElementById('enchantName').value, document.getElementById('enchantLevel').value];
+          break;
+        case 'wardenboss':
+          player = "@s";
+          args = document.getElementById('wardenXYZ').value.trim().split(" ");
+          break;
+        default:
+          player = "@s"; // fallback target
       }
 
-      const payload = {
-        player: player,
-        command: cmd,
-        args: args
-      };
+      if (!player) return alert("Missing player name");
+
+      const payload = { player, command: cmd, args };
 
       try {
         const res = await fetch(API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload)
         });
-
-        if (!res.ok) {
-          throw new Error(`Status ${res.status}`);
-        }
-
         const json = await res.json();
-        console.log("✅ Sent:", json);
-      } catch (err) {
-        alert("❌ Failed to send command: " + err.message);
+        console.log("✅ Command sent:", json);
+      } catch (e) {
+        alert("❌ Failed to send: " + e.message);
       }
     }
   </script>
