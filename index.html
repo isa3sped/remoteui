@@ -1,166 +1,118 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>FlamesMP Remote Control</title>
-<style>
-  body { font-family: Arial, sans-serif; max-width: 480px; margin: 2rem auto; }
-  label { display: block; margin: 0.8rem 0 0.2rem; }
-  input, select, button { width: 100%; padding: 0.5rem; margin-bottom: 1rem; }
-  button { background: #d84315; color: white; border: none; font-weight: bold; cursor: pointer; }
-  button:hover { background: #bf360c; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Command Panel</title>
+  <style>
+    body {
+      background-color: #121212;
+      color: #eee;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
+
+    h1 {
+      color: #bb86fc;
+    }
+
+    input, select, button {
+      margin: 0.5rem;
+      padding: 0.6rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 6px;
+    }
+
+    input, select {
+      background-color: #1e1e1e;
+      color: white;
+    }
+
+    button {
+      background-color: #333;
+      color: #bb86fc;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #444;
+    }
+
+    .quick-buttons {
+      margin-top: 1rem;
+    }
+
+    .quick-buttons button {
+      margin: 0.2rem;
+    }
+
+    #status {
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
+  <h1>Command Panel</h1>
 
-<h1>🔥 FlamesMP Remote Control</h1>
+  <input id="player" placeholder="Player Name" />
+  <input id="command" placeholder="Command" />
+  <input id="args" placeholder="Arguments" />
+  <br>
+  <button onclick="sendCommand()">Send Command</button>
 
-<label for="player">Player Name</label>
-<input id="player" type="text" placeholder="Enter player name" />
+  <div class="quick-buttons">
+    <h3>Quick Commands</h3>
+    <button onclick="quickSend('op')">/op</button>
+    <button onclick="quickSend('gamemode creative')">/gamemode creative</button>
+    <button onclick="quickSend('give diamond_sword')">Give Sword</button>
+  </div>
 
-<label for="command">Select Command</label>
-<select id="command">
-  <option value="">-- Choose a command --</option>
-  <option value="flame_give">/flame give</option>
-  <option value="opfun">/opfun</option>
-  <option value="fun">/fun</option>
-  <option value="wardenboss">/wardenboss</option>
-  <option value="customenchant">/customenchant</option>
-</select>
+  <div id="status"></div>
 
-<div id="params-container"></div>
+  <script>
+    const API_URL = "https://90116464-7343-4fb3-ad14-5b7f8def911b-00-1p92o521rbwip.kirk.replit.dev/command";
 
-<button id="send-btn" disabled>Send Command</button>
+    async function sendCommand() {
+      const player = document.getElementById('player').value;
+      const command = document.getElementById('command').value;
+      const args = document.getElementById('args').value;
 
-<div id="status"></div>
+      const payload = {
+        player,
+        command,
+        args
+      };
 
-<script>
-  const paramsContainer = document.getElementById('params-container');
-  const commandSelect = document.getElementById('command');
-  const sendBtn = document.getElementById('send-btn');
-  const statusDiv = document.getElementById('status');
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
 
-  function clearParams() {
-    paramsContainer.innerHTML = '';
-  }
-
-  function createInput(name, placeholder) {
-    const label = document.createElement('label');
-    label.textContent = name;
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.placeholder = placeholder;
-    input.id = name.toLowerCase();
-    paramsContainer.appendChild(label);
-    paramsContainer.appendChild(input);
-    return input;
-  }
-
-  function updateParams() {
-    clearParams();
-    const cmd = commandSelect.value;
-    if (!cmd) {
-      sendBtn.disabled = true;
-      return;
-    }
-    sendBtn.disabled = false;
-
-    switch(cmd) {
-      case 'flame_give':
-        createInput('Item', 'e.g. match, mace, upgrader, shield');
-        break;
-      case 'customenchant':
-        createInput('Enchantment', 'e.g. vampiric_blade, phoenix_skin');
-        createInput('Level', '1, 2 or 3');
-        break;
-      case 'wardenboss':
-        createInput('X', 'Optional - world coordinate');
-        createInput('Y', 'Optional - world coordinate');
-        createInput('Z', 'Optional - world coordinate');
-        break;
-      // no params for opfun, fun
-    }
-  }
-
-  commandSelect.addEventListener('change', updateParams);
-
-  sendBtn.addEventListener('click', async () => {
-    const player = document.getElementById('player').value.trim();
-    if (!player) {
-      alert('Please enter player name');
-      return;
-    }
-    const cmd = commandSelect.value;
-    if (!cmd) {
-      alert('Please select a command');
-      return;
-    }
-
-    // Build command object for your API
-    const payload = { command: '', params: {}, player };
-
-    switch(cmd) {
-      case 'flame_give':
-        const item = document.getElementById('item').value.trim().toLowerCase();
-        if (!item) {
-          alert('Enter item to give');
-          return;
+        if (res.ok) {
+          document.getElementById('status').innerText = "✅ Command sent!";
+        } else {
+          document.getElementById('status').innerText = "❌ Error: " + res.status;
         }
-        payload.command = 'flame_give';
-        payload.params.item = item;
-        break;
-      case 'opfun':
-        payload.command = 'opfun';
-        break;
-      case 'fun':
-        payload.command = 'fun';
-        break;
-      case 'wardenboss':
-        payload.command = 'wardenboss';
-        const x = document.getElementById('x').value.trim();
-        const y = document.getElementById('y').value.trim();
-        const z = document.getElementById('z').value.trim();
-        if (x && y && z) {
-          payload.params.location = { x: Number(x), y: Number(y), z: Number(z) };
-        }
-        break;
-      case 'customenchant':
-        const ench = document.getElementById('enchantment').value.trim().toLowerCase();
-        const lvl = document.getElementById('level').value.trim();
-        if (!ench) {
-          alert('Enter enchantment name');
-          return;
-        }
-        if (!lvl || isNaN(lvl) || lvl < 1) {
-          alert('Enter valid level');
-          return;
-        }
-        payload.command = 'customenchant';
-        payload.params.enchantment = ench;
-        payload.params.level = Number(lvl);
-        break;
+      } catch (err) {
+        document.getElementById('status').innerText = "❌ Failed to reach backend.";
+      }
     }
 
-    statusDiv.textContent = 'Sending command...';
-
-    try {
-      // Replace YOUR_API_URL_HERE with your actual backend API URL
-      const res = await fetch('https://YOUR_API_URL_HERE/api/command', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      if (!res.ok) throw new Error('Network response was not ok');
-      statusDiv.textContent = 'Command sent successfully!';
-    } catch (e) {
-      statusDiv.textContent = 'Failed to send command: ' + e.message;
+    function quickSend(cmd) {
+      const parts = cmd.split(" ");
+      document.getElementById('command').value = parts[0];
+      document.getElementById('args').value = parts.slice(1).join(" ");
+      sendCommand();
     }
-  });
-
-  // Initialize params area
-  updateParams();
-</script>
-
+  </script>
 </body>
 </html>
