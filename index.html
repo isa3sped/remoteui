@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FlamesMP Remote Control</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 480px; margin: 2rem auto; }
+  label { display: block; margin: 0.8rem 0 0.2rem; }
+  input, select, button { width: 100%; padding: 0.5rem; margin-bottom: 1rem; }
+  button { background: #d84315; color: white; border: none; font-weight: bold; cursor: pointer; }
+  button:hover { background: #bf360c; }
+</style>
+</head>
+<body>
+
+<h1>🔥 FlamesMP Remote Control</h1>
+
+<label for="player">Player Name</label>
+<input id="player" type="text" placeholder="Enter player name" />
+
+<label for="command">Select Command</label>
+<select id="command">
+  <option value="">-- Choose a command --</option>
+  <option value="flame_give">/flame give</option>
+  <option value="opfun">/opfun</option>
+  <option value="fun">/fun</option>
+  <option value="wardenboss">/wardenboss</option>
+  <option value="customenchant">/customenchant</option>
+</select>
+
+<div id="params-container"></div>
+
+<button id="send-btn" disabled>Send Command</button>
+
+<div id="status"></div>
+
+<script>
+  const paramsContainer = document.getElementById('params-container');
+  const commandSelect = document.getElementById('command');
+  const sendBtn = document.getElementById('send-btn');
+  const statusDiv = document.getElementById('status');
+
+  function clearParams() {
+    paramsContainer.innerHTML = '';
+  }
+
+  function createInput(name, placeholder) {
+    const label = document.createElement('label');
+    label.textContent = name;
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.placeholder = placeholder;
+    input.id = name.toLowerCase();
+    paramsContainer.appendChild(label);
+    paramsContainer.appendChild(input);
+    return input;
+  }
+
+  function updateParams() {
+    clearParams();
+    const cmd = commandSelect.value;
+    if (!cmd) {
+      sendBtn.disabled = true;
+      return;
+    }
+    sendBtn.disabled = false;
+
+    switch(cmd) {
+      case 'flame_give':
+        createInput('Item', 'e.g. match, mace, upgrader, shield');
+        break;
+      case 'customenchant':
+        createInput('Enchantment', 'e.g. vampiric_blade, phoenix_skin');
+        createInput('Level', '1, 2 or 3');
+        break;
+      case 'wardenboss':
+        createInput('X', 'Optional - world coordinate');
+        createInput('Y', 'Optional - world coordinate');
+        createInput('Z', 'Optional - world coordinate');
+        break;
+      // no params for opfun, fun
+    }
+  }
+
+  commandSelect.addEventListener('change', updateParams);
+
+  sendBtn.addEventListener('click', async () => {
+    const player = document.getElementById('player').value.trim();
+    if (!player) {
+      alert('Please enter player name');
+      return;
+    }
+    const cmd = commandSelect.value;
+    if (!cmd) {
+      alert('Please select a command');
+      return;
+    }
+
+    // Build command object for your API
+    const payload = { command: '', params: {}, player };
+
+    switch(cmd) {
+      case 'flame_give':
+        const item = document.getElementById('item').value.trim().toLowerCase();
+        if (!item) {
+          alert('Enter item to give');
+          return;
+        }
+        payload.command = 'flame_give';
+        payload.params.item = item;
+        break;
+      case 'opfun':
+        payload.command = 'opfun';
+        break;
+      case 'fun':
+        payload.command = 'fun';
+        break;
+      case 'wardenboss':
+        payload.command = 'wardenboss';
+        const x = document.getElementById('x').value.trim();
+        const y = document.getElementById('y').value.trim();
+        const z = document.getElementById('z').value.trim();
+        if (x && y && z) {
+          payload.params.location = { x: Number(x), y: Number(y), z: Number(z) };
+        }
+        break;
+      case 'customenchant':
+        const ench = document.getElementById('enchantment').value.trim().toLowerCase();
+        const lvl = document.getElementById('level').value.trim();
+        if (!ench) {
+          alert('Enter enchantment name');
+          return;
+        }
+        if (!lvl || isNaN(lvl) || lvl < 1) {
+          alert('Enter valid level');
+          return;
+        }
+        payload.command = 'customenchant';
+        payload.params.enchantment = ench;
+        payload.params.level = Number(lvl);
+        break;
+    }
+
+    statusDiv.textContent = 'Sending command...';
+
+    try {
+      // Replace YOUR_API_URL_HERE with your actual backend API URL
+      const res = await fetch('https://YOUR_API_URL_HERE/api/command', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error('Network response was not ok');
+      statusDiv.textContent = 'Command sent successfully!';
+    } catch (e) {
+      statusDiv.textContent = 'Failed to send command: ' + e.message;
+    }
+  });
+
+  // Initialize params area
+  updateParams();
+</script>
+
+</body>
+</html>
