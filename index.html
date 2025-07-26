@@ -1,136 +1,112 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF‑8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>FlamesMP Command Dashboard</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Minecraft RCON Quick Panel</title>
   <style>
-    body { background:#121212;color:#E0E0E0;font-family:sans-serif;text-align:center;padding:2rem;}
-    h1 { color:#BB86FC; margin-bottom:1rem; }
-    input, select, button { margin:0.5rem; padding:0.6rem; font-size:1rem; border-radius:6px; border:none;}
-    input, select { background:#1E1E1E; color:#E0E0E0; width:200px;}
-    button { background:#333;color:#BB86FC;cursor:pointer;width:220px;}
-    button:hover { background:#444; }
-    .quick-btns button { width:150px; margin:0.2rem; }
-    #status { margin-top:1rem; font-weight:bold; color:#03DAC6; }
+    body {
+      background-color: #121212;
+      color: #f1f1f1;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 2rem;
+    }
+    h1 {
+      text-align: center;
+      color: #00ffcc;
+    }
+    .command-panel {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+    }
+    .button {
+      padding: 0.8rem 1.2rem;
+      background-color: #1e1e1e;
+      color: #fff;
+      border: 1px solid #00ffcc;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .button:hover {
+      background-color: #00ffcc;
+      color: #000;
+    }
+    .form {
+      margin-top: 2rem;
+      text-align: center;
+    }
+    input {
+      padding: 0.5rem;
+      margin: 0.3rem;
+      background: #1e1e1e;
+      color: #fff;
+      border: 1px solid #333;
+      border-radius: 4px;
+    }
   </style>
 </head>
 <body>
+  <h1>⚡ Minecraft RCON Panel</h1>
 
-<h1>🔥 FlamesMP Control Panel</h1>
+  <div class="form">
+    <input type="text" id="player" placeholder="Player name" />
+    <input type="text" id="arg1" placeholder="Arg1" />
+    <input type="text" id="arg2" placeholder="Arg2" />
+    <input type="text" id="arg3" placeholder="Arg3" />
+  </div>
 
-<input id="player" placeholder="Player Name" />
-<br>
+  <div class="command-panel">
+    <button class="button" onclick="sendCmd('gamemode')">Gamemode</button>
+    <button class="button" onclick="sendCmd('give')">Give</button>
+    <button class="button" onclick="sendCmd('tp')">TP</button>
+    <button class="button" onclick="sendCmd('effect')">Effect</button>
+    <button class="button" onclick="sendCmd('attribute')">Attribute</button>
+    <button class="button" onclick="sendCmd('say')">Say</button>
+  </div>
 
-<div class="quick-btns">
-  <button onclick="quick('op','','')">➕ Op Player</button>
-  <button onclick="quick('gamemode','creative','')">🔧 Creative Mode</button>
-  <button onclick="quick('give','diamond_sword','1')">🗡️ Give Sword</button>
-</div>
+  <script>
+    const API_URL = "https://90116464-7343-4fb3-ad14-5b7f8def911b-00-1p92o521rbwip.kirk.replit.dev/api/command";
 
-<hr style="margin:1rem 0;border:1px solid #333;" />
+    async function sendCmd(cmd) {
+      const player = document.getElementById('player').value;
+      const args = [
+        document.getElementById('arg1').value,
+        document.getElementById('arg2').value,
+        document.getElementById('arg3').value
+      ].filter(Boolean);
 
-<select id="commandSelect">
-  <option value="">— Select Command —</option>
-  <option value="flame_give">Flame Give</option>
-  <option value="opfun">Op Fun</option>
-  <option value="fun">Fun</option>
-  <option value="wardenboss">Spawn Warden Boss</option>
-  <option value="customenchant">Custom Enchant</option>
-  <option value="attribute">Attribute Command</option>
-</select>
+      if (!player) {
+        alert("Enter player name.");
+        return;
+      }
 
-<div id="params"></div>
-<button id="sendBtn" onclick="sendCmd()">Send Command</button>
-<div id="status"></div>
+      const payload = {
+        player: player,
+        command: cmd,
+        args: args
+      };
 
-<script>
-  const API = "https://90116464-7343-4fb3-ad14-5b7f8def911b-00-1p92o521rbwip.kirk.replit.dev/";
-  const cmdSelect = document.getElementById('commandSelect');
-  const paramsDiv = document.getElementById('params');
-  let currentCommand = '';
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
 
-  const ATTRS = [
-    "generic.max_health", "generic.movement_speed", "generic.attack_damage",
-    "generic.armor", "generic.armor_toughness", "generic.luck",
-    "generic.attack_speed", "generic.knockback_resistance", "generic.follow_range",
-    "generic.flying_speed", "horse.jump_strength"
-  ];
+        if (!res.ok) {
+          throw new Error(`Status ${res.status}`);
+        }
 
-  cmdSelect.onchange = ()=> {
-    paramsDiv.innerHTML = '';
-    currentCommand = cmdSelect.value;
-    if (!currentCommand) return;
-    let html = '';
-    if (currentCommand === 'flame_give') {
-      html += '<input id="item" placeholder="item (match,mace)" />';
-    } else if (currentCommand === 'customenchant') {
-      html += '<input id="enchant" placeholder="Enchantment (vampiric_blade)" />';
-      html += '<input id="level" placeholder="Level (1‑3)" />';
-    } else if (currentCommand === 'wardenboss') {
-      html += '<input id="x" placeholder="X coord" />';
-      html += '<input id="y" placeholder="Y coord" />';
-      html += '<input id="z" placeholder="Z coord" />';
-    } else if (currentCommand === 'attribute') {
-      html += '<select id="attrTarget"><option value="">Attribute</option>';
-      ATTRS.forEach(a=>html+=`<option value="${a}">${a}</option>`);
-      html += '</select>';
-      html += '<input id="attrAction" placeholder="action: get/base get/base set/modifier add/remove/value get" />';
-      html += '<input id="attrValue" placeholder="value or uuid" />';
-      html += '<input id="attrScale" placeholder="scale (optional)" />';
+        const json = await res.json();
+        console.log("✅ Sent:", json);
+      } catch (err) {
+        alert("❌ Failed to send command: " + err.message);
+      }
     }
-    paramsDiv.innerHTML = html;
-  };
-
-  async function sendCmd() {
-    const player = document.getElementById('player').value.trim();
-    if (!player || !currentCommand) {
-      alert('Fill player and select command');
-      return;
-    }
-    const payload = { player, command: currentCommand, params: {} };
-    switch(currentCommand) {
-      case 'flame_give':
-        payload.params.item = document.getElementById('item').value.trim();
-        break;
-      case 'customenchant':
-        payload.params.enchantment = document.getElementById('enchant').value.trim();
-        payload.params.level = parseInt(document.getElementById('level').value);
-        break;
-      case 'wardenboss':
-        const x = document.getElementById('x').value, y = document.getElementById('y').value, z = document.getElementById('z').value;
-        if (x && y && z) payload.params.location = { x: Number(x), y: Number(y), z: Number(z) };
-        break;
-      case 'attribute':
-        payload.params.attribute = document.getElementById('attrTarget').value;
-        payload.params.action = document.getElementById('attrAction').value;
-        payload.params.value = document.getElementById('attrValue').value;
-        payload.params.scale = document.getElementById('attrScale').value;
-        break;
-    }
-
-    try {
-      const res = await fetch(API, {
-        method:'POST', headers:{ 'Content-Type':'application/json' },
-        body: JSON.stringify(payload)
-      });
-      document.getElementById('status').innerText = res.ok ? '✅ Sent!' : `❌ Error ${res.status}`;
-    } catch(e) {
-      document.getElementById('status').innerText = '❌ Failed to reach backend';
-    }
-  }
-
-  function quick(cmd, args, dummy) {
-    document.getElementById('commandSelect').value = cmd.replace(/ .*/,'');
-    cmdSelect.onchange();
-    if (cmd.includes(' ')) {
-      const parts = cmd.split(' ');
-      document.getElementById('command').value = parts[0];
-      document.getElementById('args').value = parts.slice(1).join(' ');
-    }
-    sendCmd();
-  }
-</script>
-
+  </script>
 </body>
 </html>
