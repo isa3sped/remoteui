@@ -1,158 +1,154 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quick Command Panel</title>
+  <meta charset="UTF-8" />
+  <title>Minecraft RCON Panel</title>
   <style>
     body {
       background-color: #111;
       color: #f1f1f1;
-      font-family: monospace;
-      margin: 0;
-      padding: 2rem;
+      font-family: Arial, sans-serif;
+      padding: 20px;
     }
     h1 {
+      color: #00ffcc;
       text-align: center;
-      color: #00ffaa;
     }
-    .section {
-      margin-bottom: 2rem;
-    }
-    .section-title {
-      margin-bottom: 0.5rem;
-      font-weight: bold;
-      font-size: 1.2rem;
-    }
-    .cmd-row {
-      display: flex;
-      gap: 0.5rem;
-      margin-bottom: 0.5rem;
-      align-items: center;
-    }
-    input, select {
-      padding: 0.5rem;
-      background: #1e1e1e;
-      color: #fff;
-      border: 1px solid #333;
-      border-radius: 4px;
-      flex: 1;
-    }
-    button {
-      padding: 0.5rem 1rem;
-      background-color: #00ffaa;
-      color: #000;
-      border: none;
-      border-radius: 4px;
+    .tab-buttons button {
+      margin: 5px;
+      padding: 10px 15px;
+      background: #222;
+      border: 1px solid #00ffcc;
+      color: white;
       cursor: pointer;
     }
-    button:hover {
-      background-color: #00dd99;
+    .tab-buttons button:hover {
+      background: #00ffcc;
+      color: black;
+    }
+    .tab {
+      display: none;
+    }
+    .tab.active {
+      display: block;
+    }
+    .command-panel button {
+      margin: 5px;
+      padding: 8px 12px;
+      background: #1e1e1e;
+      border: 1px solid #00ffcc;
+      color: white;
+      cursor: pointer;
+    }
+    .command-panel button:hover {
+      background: #00ffcc;
+      color: black;
+    }
+    .form {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    input {
+      padding: 0.5rem;
+      margin: 0.2rem;
+      background: #1e1e1e;
+      border: 1px solid #333;
+      color: white;
+      border-radius: 4px;
     }
   </style>
 </head>
 <body>
-  <h1>⚡ Admin Command Panel</h1>
+  <h1>⚡ Minecraft RCON Panel</h1>
 
-  <div class="section">
-    <div class="section-title">Flame Commands</div>
-    <div class="cmd-row">
-      <input type="text" placeholder="Player" id="flamePlayer" />
-      <select id="flameType">
-        <option>burning</option><option>frost</option><option>earth</option><option>aquatic</option>
-        <option>gust</option><option>cosmic</option><option>shadow</option><option>life</option>
-        <option>dragon</option><option>storm</option><option>wealth</option><option>warden</option>
-        <option>wither</option>
-      </select>
-      <button onclick="send('flame set')">Set Flame</button>
-    </div>
-    <div class="cmd-row">
-      <input type="text" placeholder="Player" id="giveFlamePlayer" />
-      <select id="flameItem">
-        <option>match</option><option>mace</option><option>upgrader</option>
-        <option>shield</option><option>life</option><option>token</option><option>tradertoken</option>
-      </select>
-      <button onclick="send('flame give')">Give Flame Item</button>
+  <div class="form">
+    <input type="text" id="player" placeholder="Player name" />
+    <input type="text" id="arg1" placeholder="Arg1" />
+    <input type="text" id="arg2" placeholder="Arg2" />
+    <input type="text" id="arg3" placeholder="Arg3" />
+  </div>
+
+  <div class="tab-buttons">
+    <button onclick="showTab('flame')">🔥 Flame</button>
+    <button onclick="showTab('admin')">🛠 Admin</button>
+    <button onclick="showTab('pvp')">⚔️ PvP</button>
+    <button onclick="showTab('events')">💥 Events</button>
+    <button onclick="showTab('attribute')">📊 Attribute</button>
+  </div>
+
+  <!-- FLAME TAB -->
+  <div class="tab" id="flame">
+    <div class="command-panel">
+      <button onclick="sendCmd('flame', ['give', 'fire'])">Give Flame (Fire)</button>
+      <button onclick="sendCmd('flame', ['set', 'lava'])">Set Flame (Lava)</button>
+      <button onclick="sendCmd('flame', ['reset'])">Reset Flame</button>
     </div>
   </div>
 
-  <div class="section">
-    <div class="section-title">Operator</div>
-    <div class="cmd-row">
-      <input type="text" placeholder="Player to OP" id="opPlayer" />
-      <button onclick="send('op')">OP Player</button>
-    </div>
-    <div class="cmd-row">
-      <input type="text" placeholder="Player to Kick" id="kickPlayer" />
-      <button onclick="send('kick')">Kick</button>
+  <!-- ADMIN TAB -->
+  <div class="tab" id="admin">
+    <div class="command-panel">
+      <button onclick="sendCmd('setop', [])">Set OP</button>
+      <button onclick="sendCmd('reload', [])">Reload</button>
+      <button onclick="sendCmd('gamemode', ['creative'])">Gamemode Creative</button>
+      <button onclick="sendCmd('say', ['Hello world'])">Say Hello</button>
     </div>
   </div>
 
-  <div class="section">
-    <div class="section-title">Custom Enchant</div>
-    <div class="cmd-row">
-      <input type="text" placeholder="Enchantment" id="enchantName" />
-      <input type="text" placeholder="Level" id="enchantLevel" />
-      <button onclick="send('customenchant')">Test Enchant</button>
+  <!-- PVP TAB -->
+  <div class="tab" id="pvp">
+    <div class="command-panel">
+      <button onclick="sendCmd('effect', ['speed', '100', '1'])">Effect: Speed</button>
+      <button onclick="sendCmd('effect', ['clear'])">Clear Effects</button>
+      <button onclick="sendCmd('give', ['diamond_sword'])">Give Sword</button>
+      <button onclick="sendCmd('tp', ['~', '~', '~'])">TP Self</button>
     </div>
   </div>
 
-  <div class="section">
-    <div class="section-title">Other</div>
-    <div class="cmd-row">
-      <input type="text" placeholder="x y z" id="wardenXYZ" />
-      <button onclick="send('wardenboss')">Spawn Warden</button>
+  <!-- EVENTS TAB -->
+  <div class="tab" id="events">
+    <div class="command-panel">
+      <button onclick="sendCmd('event', ['warden'])">Spawn Warden</button>
+      <button onclick="sendCmd('event', ['raid'])">Start Raid</button>
+      <button onclick="sendCmd('event', ['boss'])">Spawn Boss</button>
+      <button onclick="sendCmd('say', ['Event starting!'])">Announce Event</button>
     </div>
-    <div class="cmd-row">
-      <button onclick="send('enablenether')">Enable Nether</button>
-      <button onclick="send('disablenether')">Disable Nether</button>
-    </div>
-    <div class="cmd-row">
-      <button onclick="send('enablepvp')">Enable PVP</button>
-      <button onclick="send('disablepvp')">Disable PVP</button>
-    </div>
-    <div class="cmd-row">
-      <button onclick="send('prog1')">Trigger Prog1</button>
+  </div>
+
+  <!-- ATTRIBUTE TAB -->
+  <div class="tab" id="attribute">
+    <div class="command-panel">
+      <button onclick="sendCmd('attribute', ['generic.max_health', 'base', '40'])">Max Health 40</button>
+      <button onclick="sendCmd('attribute', ['generic.movement_speed', 'base', '0.3'])">Speed 0.3</button>
+      <button onclick="sendCmd('attribute', ['generic.attack_damage', 'base', '1'])">Reset Strength</button>
     </div>
   </div>
 
   <script>
     const API_URL = "https://90116464-7343-4fb3-ad14-5b7f8def911b-00-1p92o521rbwip.kirk.replit.dev/api/command";
 
-    async function send(cmd) {
-      let args = [];
-      let player = "";
+    function showTab(tabId) {
+      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+    }
 
-      switch (cmd) {
-        case 'op':
-          player = document.getElementById('opPlayer').value;
-          break;
-        case 'kick':
-          player = document.getElementById('kickPlayer').value;
-          break;
-        case 'flame set':
-          player = document.getElementById('flamePlayer').value;
-          args = [document.getElementById('flameType').value];
-          break;
-        case 'flame give':
-          player = document.getElementById('giveFlamePlayer').value;
-          args = [document.getElementById('flameItem').value];
-          break;
-        case 'customenchant':
-          player = "@s";
-          args = [document.getElementById('enchantName').value, document.getElementById('enchantLevel').value];
-          break;
-        case 'wardenboss':
-          player = "@s";
-          args = document.getElementById('wardenXYZ').value.trim().split(" ");
-          break;
-        default:
-          player = "@s"; // fallback target
-      }
+    async function sendCmd(command, defaultArgs = []) {
+      const player = document.getElementById("player").value;
+      const inputs = [
+        document.getElementById("arg1").value,
+        document.getElementById("arg2").value,
+        document.getElementById("arg3").value
+      ].filter(Boolean);
 
-      if (!player) return alert("Missing player name");
+      const args = inputs.length > 0 ? inputs : defaultArgs;
 
-      const payload = { player, command: cmd, args };
+      if (!player) return alert("Please enter a player name.");
+
+      const payload = {
+        player: player,
+        command: command,
+        args: args
+      };
 
       try {
         const res = await fetch(API_URL, {
@@ -160,12 +156,17 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload)
         });
+
+        if (!res.ok) throw new Error("Failed with status " + res.status);
         const json = await res.json();
-        console.log("✅ Command sent:", json);
-      } catch (e) {
-        alert("❌ Failed to send: " + e.message);
+        console.log("✅ Sent:", json);
+      } catch (err) {
+        alert("❌ Failed: " + err.message);
       }
     }
+
+    // Show first tab on load
+    showTab('flame');
   </script>
 </body>
 </html>
