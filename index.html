@@ -1,172 +1,138 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Minecraft RCON Panel</title>
-  <style>
-    body {
-      background-color: #111;
-      color: #f1f1f1;
-      font-family: Arial, sans-serif;
-      padding: 20px;
-    }
-    h1 {
-      color: #00ffcc;
-      text-align: center;
-    }
-    .tab-buttons button {
-      margin: 5px;
-      padding: 10px 15px;
-      background: #222;
-      border: 1px solid #00ffcc;
-      color: white;
-      cursor: pointer;
-    }
-    .tab-buttons button:hover {
-      background: #00ffcc;
-      color: black;
-    }
-    .tab {
-      display: none;
-    }
-    .tab.active {
-      display: block;
-    }
-    .command-panel button {
-      margin: 5px;
-      padding: 8px 12px;
-      background: #1e1e1e;
-      border: 1px solid #00ffcc;
-      color: white;
-      cursor: pointer;
-    }
-    .command-panel button:hover {
-      background: #00ffcc;
-      color: black;
-    }
-    .form {
-      text-align: center;
-      margin-bottom: 1.5rem;
-    }
-    input {
-      padding: 0.5rem;
-      margin: 0.2rem;
-      background: #1e1e1e;
-      border: 1px solid #333;
-      color: white;
-      border-radius: 4px;
-    }
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>🔥 Flame RCON Panel</title>
+    <style>
+        body {
+            background-color: #111;
+            color: #eee;
+            font-family: 'Segoe UI', sans-serif;
+            padding: 20px;
+        }
+        h1, h2 {
+            color: #ffa600;
+        }
+        button {
+            background-color: #222;
+            color: #ffa600;
+            border: 1px solid #444;
+            padding: 8px 12px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #333;
+        }
+        .cmd-group {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #1a1a1a;
+            border-left: 3px solid #ffa600;
+        }
+        input, select {
+            background-color: #1e1e1e;
+            color: #eee;
+            border: 1px solid #555;
+            padding: 6px;
+            margin: 5px 0;
+            width: 100%;
+        }
+    </style>
 </head>
 <body>
-  <h1>⚡ Minecraft RCON Panel</h1>
+    <h1>🔥 Flame RCON Panel</h1>
 
-  <div class="form">
-    <input type="text" id="player" placeholder="Player name" />
-    <input type="text" id="arg1" placeholder="Arg1" />
-    <input type="text" id="arg2" placeholder="Arg2" />
-    <input type="text" id="arg3" placeholder="Arg3" />
-  </div>
+    <label>Player Username:</label>
+    <input type="text" id="player" placeholder="e.g., Notch" />
 
-  <div class="tab-buttons">
-    <button onclick="showTab('flame')">🔥 Flame</button>
-    <button onclick="showTab('admin')">🛠 Admin</button>
-    <button onclick="showTab('pvp')">⚔️ PvP</button>
-    <button onclick="showTab('events')">💥 Events</button>
-    <button onclick="showTab('attribute')">📊 Attribute</button>
-  </div>
-
-  <!-- FLAME TAB -->
-  <div class="tab" id="flame">
-    <div class="command-panel">
-      <button onclick="sendCmd('flame', ['give', 'fire'])">Give Flame (Fire)</button>
-      <button onclick="sendCmd('flame', ['set', 'lava'])">Set Flame (Lava)</button>
-      <button onclick="sendCmd('flame', ['reset'])">Reset Flame</button>
+    <div class="cmd-group">
+        <h2>🔥 Flame Types</h2>
+        <div id="flameButtons"></div>
     </div>
-  </div>
 
-  <!-- ADMIN TAB -->
-  <div class="tab" id="admin">
-    <div class="command-panel">
-      <button onclick="sendCmd('setop', [])">Set OP</button>
-      <button onclick="sendCmd('reload', [])">Reload</button>
-      <button onclick="sendCmd('gamemode', ['creative'])">Gamemode Creative</button>
-      <button onclick="sendCmd('say', ['Hello world'])">Say Hello</button>
+    <div class="cmd-group">
+        <h2>⚙️ /attribute</h2>
+        <input type="text" id="attrTarget" placeholder="Target (e.g. @s)" />
+        <input type="text" id="attrName" placeholder="Attribute (e.g. minecraft:generic.attack_damage)" />
+        <select id="attrAction">
+            <option value="get">get</option>
+            <option value="base">base set</option>
+            <option value="modifier">modifier</option>
+        </select>
+        <input type="text" id="attrValue" placeholder="Value (if setting base or modifier)" />
+        <button onclick="sendAttribute()">Run /attribute</button>
     </div>
-  </div>
 
-  <!-- PVP TAB -->
-  <div class="tab" id="pvp">
-    <div class="command-panel">
-      <button onclick="sendCmd('effect', ['speed', '100', '1'])">Effect: Speed</button>
-      <button onclick="sendCmd('effect', ['clear'])">Clear Effects</button>
-      <button onclick="sendCmd('give', ['diamond_sword'])">Give Sword</button>
-      <button onclick="sendCmd('tp', ['~', '~', '~'])">TP Self</button>
+    <div class="cmd-group">
+        <h2>🧪 Custom Command</h2>
+        <input type="text" id="custom" placeholder="Enter any command..." />
+        <button onclick="sendCustom()">Send</button>
     </div>
-  </div>
 
-  <!-- EVENTS TAB -->
-  <div class="tab" id="events">
-    <div class="command-panel">
-      <button onclick="sendCmd('event', ['warden'])">Spawn Warden</button>
-      <button onclick="sendCmd('event', ['raid'])">Start Raid</button>
-      <button onclick="sendCmd('event', ['boss'])">Spawn Boss</button>
-      <button onclick="sendCmd('say', ['Event starting!'])">Announce Event</button>
-    </div>
-  </div>
+    <script>
+        const FLAMES = [
+            "BURNING", "FROST", "EARTH", "AQUATIC", "GUST", "COSMIC", "SHADOW",
+            "LIFE", "DRAGON", "STORM", "WEALTH", "WARDEN", "WITHER"
+        ];
 
-  <!-- ATTRIBUTE TAB -->
-  <div class="tab" id="attribute">
-    <div class="command-panel">
-      <button onclick="sendCmd('attribute', ['generic.max_health', 'base', '40'])">Max Health 40</button>
-      <button onclick="sendCmd('attribute', ['generic.movement_speed', 'base', '0.3'])">Speed 0.3</button>
-      <button onclick="sendCmd('attribute', ['generic.attack_damage', 'base', '1'])">Reset Strength</button>
-    </div>
-  </div>
+        const backendUrl = "https://90116464-7343-4fb3-ad14-5b7f8def911b-00-1p92o521rbwip.kirk.replit.dev/api/command";
 
-  <script>
-    const API_URL = "https://90116464-7343-4fb3-ad14-5b7f8def911b-00-1p92o521rbwip.kirk.replit.dev/api/command";
+        function sendCmd(player, command, args) {
+            fetch(backendUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ player, command, args })
+            })
+            .then(res => res.json())
+            .then(data => console.log("✅ Sent:", data))
+            .catch(err => console.error("❌ Error:", err));
+        }
 
-    function showTab(tabId) {
-      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-      document.getElementById(tabId).classList.add('active');
-    }
+        function sendFlame(flame) {
+            const player = document.getElementById("player").value;
+            if (!player) return alert("Enter player username.");
+            sendCmd(player, "flame", ["set", flame]);
+        }
 
-    async function sendCmd(command, defaultArgs = []) {
-      const player = document.getElementById("player").value;
-      const inputs = [
-        document.getElementById("arg1").value,
-        document.getElementById("arg2").value,
-        document.getElementById("arg3").value
-      ].filter(Boolean);
+        function sendAttribute() {
+            const player = document.getElementById("player").value;
+            const target = document.getElementById("attrTarget").value;
+            const name = document.getElementById("attrName").value;
+            const action = document.getElementById("attrAction").value;
+            const value = document.getElementById("attrValue").value;
 
-      const args = inputs.length > 0 ? inputs : defaultArgs;
+            if (!player || !target || !name || !action) return alert("Fill all attribute fields.");
 
-      if (!player) return alert("Please enter a player name.");
+            let args = ["attribute", target, name];
+            if (action === "get") args.push("get");
+            else if (action === "base") args.push("base", "set", value);
+            else args.push("modifier", "add", "uuid123", "modifier", value, "add");
 
-      const payload = {
-        player: player,
-        command: command,
-        args: args
-      };
+            sendCmd(player, args[0], args.slice(1));
+        }
 
-      try {
-        const res = await fetch(API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
+        function sendCustom() {
+            const player = document.getElementById("player").value;
+            const raw = document.getElementById("custom").value.trim();
+            if (!player || !raw) return alert("Player and command required.");
+            const parts = raw.split(" ");
+            const cmd = parts[0];
+            const args = parts.slice(1);
+            sendCmd(player, cmd, args);
+        }
 
-        if (!res.ok) throw new Error("Failed with status " + res.status);
-        const json = await res.json();
-        console.log("✅ Sent:", json);
-      } catch (err) {
-        alert("❌ Failed: " + err.message);
-      }
-    }
-
-    // Show first tab on load
-    showTab('flame');
-  </script>
+        window.onload = () => {
+            const btnContainer = document.getElementById("flameButtons");
+            FLAMES.forEach(f => {
+                const btn = document.createElement("button");
+                btn.textContent = f;
+                btn.onclick = () => sendFlame(f);
+                btnContainer.appendChild(btn);
+            });
+        };
+    </script>
 </body>
 </html>
