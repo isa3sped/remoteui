@@ -1,118 +1,136 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Command Panel</title>
+  <meta charset="UTF‑8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>FlamesMP Command Dashboard</title>
   <style>
-    body {
-      background-color: #121212;
-      color: #eee;
-      font-family: 'Segoe UI', sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 2rem;
-    }
-
-    h1 {
-      color: #bb86fc;
-    }
-
-    input, select, button {
-      margin: 0.5rem;
-      padding: 0.6rem;
-      font-size: 1rem;
-      border: none;
-      border-radius: 6px;
-    }
-
-    input, select {
-      background-color: #1e1e1e;
-      color: white;
-    }
-
-    button {
-      background-color: #333;
-      color: #bb86fc;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #444;
-    }
-
-    .quick-buttons {
-      margin-top: 1rem;
-    }
-
-    .quick-buttons button {
-      margin: 0.2rem;
-    }
-
-    #status {
-      margin-top: 1rem;
-      font-weight: bold;
-    }
+    body { background:#121212;color:#E0E0E0;font-family:sans-serif;text-align:center;padding:2rem;}
+    h1 { color:#BB86FC; margin-bottom:1rem; }
+    input, select, button { margin:0.5rem; padding:0.6rem; font-size:1rem; border-radius:6px; border:none;}
+    input, select { background:#1E1E1E; color:#E0E0E0; width:200px;}
+    button { background:#333;color:#BB86FC;cursor:pointer;width:220px;}
+    button:hover { background:#444; }
+    .quick-btns button { width:150px; margin:0.2rem; }
+    #status { margin-top:1rem; font-weight:bold; color:#03DAC6; }
   </style>
 </head>
 <body>
-  <h1>Command Panel</h1>
 
-  <input id="player" placeholder="Player Name" />
-  <input id="command" placeholder="Command" />
-  <input id="args" placeholder="Arguments" />
-  <br>
-  <button onclick="sendCommand()">Send Command</button>
+<h1>🔥 FlamesMP Control Panel</h1>
 
-  <div class="quick-buttons">
-    <h3>Quick Commands</h3>
-    <button onclick="quickSend('op')">/op</button>
-    <button onclick="quickSend('gamemode creative')">/gamemode creative</button>
-    <button onclick="quickSend('give diamond_sword')">Give Sword</button>
-  </div>
+<input id="player" placeholder="Player Name" />
+<br>
 
-  <div id="status"></div>
+<div class="quick-btns">
+  <button onclick="quick('op','','')">➕ Op Player</button>
+  <button onclick="quick('gamemode','creative','')">🔧 Creative Mode</button>
+  <button onclick="quick('give','diamond_sword','1')">🗡️ Give Sword</button>
+</div>
 
-  <script>
-    const API_URL = "https://90116464-7343-4fb3-ad14-5b7f8def911b-00-1p92o521rbwip.kirk.replit.dev/command";
+<hr style="margin:1rem 0;border:1px solid #333;" />
 
-    async function sendCommand() {
-      const player = document.getElementById('player').value;
-      const command = document.getElementById('command').value;
-      const args = document.getElementById('args').value;
+<select id="commandSelect">
+  <option value="">— Select Command —</option>
+  <option value="flame_give">Flame Give</option>
+  <option value="opfun">Op Fun</option>
+  <option value="fun">Fun</option>
+  <option value="wardenboss">Spawn Warden Boss</option>
+  <option value="customenchant">Custom Enchant</option>
+  <option value="attribute">Attribute Command</option>
+</select>
 
-      const payload = {
-        player,
-        command,
-        args
-      };
+<div id="params"></div>
+<button id="sendBtn" onclick="sendCmd()">Send Command</button>
+<div id="status"></div>
 
-      try {
-        const res = await fetch(API_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(payload)
-        });
+<script>
+  const API = "https://90116464-7343-4fb3-ad14-5b7f8def911b-00-1p92o521rbwip.kirk.replit.dev/command";
+  const cmdSelect = document.getElementById('commandSelect');
+  const paramsDiv = document.getElementById('params');
+  let currentCommand = '';
 
-        if (res.ok) {
-          document.getElementById('status').innerText = "✅ Command sent!";
-        } else {
-          document.getElementById('status').innerText = "❌ Error: " + res.status;
-        }
-      } catch (err) {
-        document.getElementById('status').innerText = "❌ Failed to reach backend.";
-      }
+  const ATTRS = [
+    "generic.max_health", "generic.movement_speed", "generic.attack_damage",
+    "generic.armor", "generic.armor_toughness", "generic.luck",
+    "generic.attack_speed", "generic.knockback_resistance", "generic.follow_range",
+    "generic.flying_speed", "horse.jump_strength"
+  ];
+
+  cmdSelect.onchange = ()=> {
+    paramsDiv.innerHTML = '';
+    currentCommand = cmdSelect.value;
+    if (!currentCommand) return;
+    let html = '';
+    if (currentCommand === 'flame_give') {
+      html += '<input id="item" placeholder="item (match,mace)" />';
+    } else if (currentCommand === 'customenchant') {
+      html += '<input id="enchant" placeholder="Enchantment (vampiric_blade)" />';
+      html += '<input id="level" placeholder="Level (1‑3)" />';
+    } else if (currentCommand === 'wardenboss') {
+      html += '<input id="x" placeholder="X coord" />';
+      html += '<input id="y" placeholder="Y coord" />';
+      html += '<input id="z" placeholder="Z coord" />';
+    } else if (currentCommand === 'attribute') {
+      html += '<select id="attrTarget"><option value="">Attribute</option>';
+      ATTRS.forEach(a=>html+=`<option value="${a}">${a}</option>`);
+      html += '</select>';
+      html += '<input id="attrAction" placeholder="action: get/base get/base set/modifier add/remove/value get" />';
+      html += '<input id="attrValue" placeholder="value or uuid" />';
+      html += '<input id="attrScale" placeholder="scale (optional)" />';
+    }
+    paramsDiv.innerHTML = html;
+  };
+
+  async function sendCmd() {
+    const player = document.getElementById('player').value.trim();
+    if (!player || !currentCommand) {
+      alert('Fill player and select command');
+      return;
+    }
+    const payload = { player, command: currentCommand, params: {} };
+    switch(currentCommand) {
+      case 'flame_give':
+        payload.params.item = document.getElementById('item').value.trim();
+        break;
+      case 'customenchant':
+        payload.params.enchantment = document.getElementById('enchant').value.trim();
+        payload.params.level = parseInt(document.getElementById('level').value);
+        break;
+      case 'wardenboss':
+        const x = document.getElementById('x').value, y = document.getElementById('y').value, z = document.getElementById('z').value;
+        if (x && y && z) payload.params.location = { x: Number(x), y: Number(y), z: Number(z) };
+        break;
+      case 'attribute':
+        payload.params.attribute = document.getElementById('attrTarget').value;
+        payload.params.action = document.getElementById('attrAction').value;
+        payload.params.value = document.getElementById('attrValue').value;
+        payload.params.scale = document.getElementById('attrScale').value;
+        break;
     }
 
-    function quickSend(cmd) {
-      const parts = cmd.split(" ");
+    try {
+      const res = await fetch(API, {
+        method:'POST', headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify(payload)
+      });
+      document.getElementById('status').innerText = res.ok ? '✅ Sent!' : `❌ Error ${res.status}`;
+    } catch(e) {
+      document.getElementById('status').innerText = '❌ Failed to reach backend';
+    }
+  }
+
+  function quick(cmd, args, dummy) {
+    document.getElementById('commandSelect').value = cmd.replace(/ .*/,'');
+    cmdSelect.onchange();
+    if (cmd.includes(' ')) {
+      const parts = cmd.split(' ');
       document.getElementById('command').value = parts[0];
-      document.getElementById('args').value = parts.slice(1).join(" ");
-      sendCommand();
+      document.getElementById('args').value = parts.slice(1).join(' ');
     }
-  </script>
+    sendCmd();
+  }
+</script>
+
 </body>
 </html>
