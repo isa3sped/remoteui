@@ -72,6 +72,39 @@
         <button onclick="sendCustom()">Send</button>
     </div>
 
+    <!-- New commands added here -->
+    <div class="cmd-group">
+        <h2>🎁 /give</h2>
+        <input type="text" id="giveItem" placeholder="Item (e.g., minecraft:diamond)" />
+        <input type="number" id="giveAmount" min="1" value="1" />
+        <button onclick="sendGive()">Send /give</button>
+    </div>
+
+    <div class="cmd-group">
+        <h2>🎮 /gamemode</h2>
+        <select id="gamemodeMode">
+            <option value="survival">survival</option>
+            <option value="creative">creative</option>
+            <option value="adventure">adventure</option>
+            <option value="spectator">spectator</option>
+        </select>
+        <input type="text" id="gamemodePlayer" placeholder="Player (optional)" />
+        <button onclick="sendGamemode()">Send /gamemode</button>
+    </div>
+
+    <div class="cmd-group">
+        <h2>✨ /effect</h2>
+        <input type="text" id="effectPlayer" placeholder="Player" />
+        <input type="text" id="effectEffect" placeholder="Effect (e.g., minecraft:speed)" />
+        <input type="number" id="effectDuration" min="1" value="30" placeholder="Duration (seconds)" />
+        <input type="number" id="effectAmplifier" min="0" value="0" placeholder="Amplifier" />
+        <label style="display:block; margin-top:8px;">
+            <input type="checkbox" id="effectHideParticles" />
+            Hide Particles
+        </label>
+        <button onclick="sendEffect()">Send /effect</button>
+    </div>
+
     <script>
         const FLAMES = [
             "BURNING", "FROST", "EARTH", "AQUATIC", "GUST", "COSMIC", "SHADOW",
@@ -122,6 +155,39 @@
             const cmd = parts[0];
             const args = parts.slice(1);
             sendCmd(player, cmd, args);
+        }
+
+        // New functions for /give, /gamemode, /effect
+
+        function sendGive() {
+            const player = document.getElementById("player").value;
+            const item = document.getElementById("giveItem").value.trim();
+            const amount = parseInt(document.getElementById("giveAmount").value, 10) || 1;
+
+            if (!player || !item) return alert("Player and item are required for /give.");
+            sendCmd(player, "give", [item, amount.toString()]);
+        }
+
+        function sendGamemode() {
+            const mode = document.getElementById("gamemodeMode").value;
+            const player = document.getElementById("gamemodePlayer").value.trim() || document.getElementById("player").value;
+
+            if (!mode || !player) return alert("Mode and player are required for /gamemode.");
+            sendCmd(player, "gamemode", [mode]);
+        }
+
+        function sendEffect() {
+            const player = document.getElementById("effectPlayer").value.trim();
+            const effect = document.getElementById("effectEffect").value.trim();
+            const duration = parseInt(document.getElementById("effectDuration").value, 10) || 30;
+            const amplifier = parseInt(document.getElementById("effectAmplifier").value, 10) || 0;
+            const hideParticles = document.getElementById("effectHideParticles").checked;
+
+            if (!player || !effect) return alert("Player and effect are required for /effect.");
+
+            const args = [effect, duration.toString(), amplifier.toString()];
+            if (hideParticles) args.push("true");
+            sendCmd(player, "effect", args);
         }
 
         window.onload = () => {
