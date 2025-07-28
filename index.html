@@ -5,200 +5,378 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>🔥 Flame RCON Panel</title>
     <style>
+        /* --- General Setup & Variables --- */
+        :root {
+            --primary-color: #ffa600;
+            --background-color: #121212;
+            --surface-color: #1e1e1e;
+            --surface-hover: #2a2a2a;
+            --text-color: #f0f0f0;
+            --border-color: #333;
+            --border-focus-color: var(--primary-color);
+            --success-color: #28a745;
+            --error-color: #dc3545;
+        }
+
         body {
-            background-color: #111;
-            color: #eee;
-            font-family: 'Segoe UI', sans-serif;
-            padding: 20px;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 2rem;
         }
+
+        /* --- Typography & Main Structure --- */
         h1, h2 {
-            color: #ffa600;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+            letter-spacing: 1px;
         }
-        button {
-            background-color: #222;
-            color: #ffa600;
-            border: 1px solid #444;
-            padding: 8px 12px;
-            margin: 5px;
-            border-radius: 4px;
-            cursor: pointer;
+
+        h1 {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 2rem;
         }
-        button:hover {
-            background-color: #333;
+
+        h2 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
         }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+        }
+
+        /* --- Command Group Styling --- */
         .cmd-group {
-            margin-top: 15px;
-            padding: 10px;
-            background-color: #1a1a1a;
-            border-left: 3px solid #ffa600;
+            background-color: var(--surface-color);
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            transition: border-color 0.3s ease;
         }
-        input, select {
-            background-color: #1e1e1e;
-            color: #eee;
-            border: 1px solid #555;
-            padding: 6px;
-            margin: 5px 0;
+
+        .cmd-group:focus-within {
+            border-color: var(--primary-color);
+        }
+
+        /* --- Form Elements --- */
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #ccc;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            background-color: #111;
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            margin-bottom: 1rem;
+            border-radius: 5px;
             width: 100%;
+            box-sizing: border-box; /* Important for padding */
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--border-focus-color);
+            box-shadow: 0 0 5px rgba(255, 166, 0, 0.5);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .form-row > * {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        /* --- Button Styling --- */
+        .button, button {
+            background-color: var(--primary-color);
+            color: #111;
+            font-weight: bold;
+            border: none;
+            padding: 12px 18px;
+            margin: 5px 0;
+            border-radius: 5px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.2s ease-in-out;
+            display: inline-block; /* For flame buttons */
+        }
+
+        .button:hover, button:hover {
+            background-color: #ffc107;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+        }
+
+        #flameButtons button {
+            background-color: var(--surface-hover);
+            color: var(--primary-color);
+            margin: 4px;
+        }
+
+        #flameButtons button:hover {
+             background-color: var(--primary-color);
+             color: #111;
+        }
+
+        /* --- Special Controls --- */
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 8px;
+            user-select: none;
+        }
+
+        /* --- Status Bar --- */
+        #status-bar {
+            position: fixed;
+            bottom: -100px; /* Initially hidden */
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 25px;
+            border-radius: 8px;
+            color: #fff;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            transition: bottom 0.5s ease-in-out;
+            z-index: 1000;
+        }
+        #status-bar.success {
+            background-color: var(--success-color);
+        }
+        #status-bar.error {
+            background-color: var(--error-color);
+        }
+        #status-bar.visible {
+            bottom: 20px;
         }
     </style>
 </head>
 <body>
-    <h1>🔥 Flame RCON Panel</h1>
+    <div class="container">
+        <h1>🔥 Flame RCON Panel</h1>
 
-    <label>Player Username:</label>
-    <input type="text" id="player" placeholder="e.g., Notch" />
+        <div class="cmd-group">
+            <label for="player">Global Player Username</label>
+            <input type="text" id="player" placeholder="e.g., Notch" />
+        </div>
 
-    <div class="cmd-group">
-        <h2>🔥 Flame Types</h2>
-        <div id="flameButtons"></div>
+        <div class="cmd-group">
+            <h2>🔥 Flame Types</h2>
+            <div id="flameButtons"></div>
+        </div>
+
+        <div class="cmd-group">
+            <h2>🎁 /give</h2>
+            <div class="form-row">
+                <input type="text" id="givePlayer" placeholder="Player (defaults to Global)" />
+                <input type="text" id="giveItem" placeholder="Item (e.g., minecraft:diamond)" />
+                <input type="number" id="giveAmount" min="1" value="1" />
+            </div>
+            <button id="sendGive">Send /give</button>
+        </div>
+
+        <div class="cmd-group">
+            <h2>🎮 /gamemode</h2>
+            <div class="form-row">
+                 <input type="text" id="gamemodePlayer" placeholder="Player (defaults to Global)" />
+                <select id="gamemodeMode">
+                    <option value="survival">Survival</option>
+                    <option value="creative">Creative</option>
+                    <option value="adventure">Adventure</option>
+                    <option value="spectator">Spectator</option>
+                </select>
+            </div>
+            <button id="sendGamemode">Send /gamemode</button>
+        </div>
+
+        <div class="cmd-group">
+            <h2>✨ /effect</h2>
+            <div class="form-row">
+                <input type="text" id="effectPlayer" placeholder="Player (defaults to Global)" />
+                <input type="text" id="effectEffect" placeholder="Effect (e.g., minecraft:speed)" />
+                <input type="number" id="effectDuration" min="1" value="30" placeholder="Duration" />
+                <input type="number" id="effectAmplifier" min="0" value="0" placeholder="Amplifier" />
+            </div>
+            <div class="checkbox-container">
+                <input type="checkbox" id="effectHideParticles" />
+                <label for="effectHideParticles">Hide Particles</label>
+            </div>
+            <button id="sendEffect">Send /effect</button>
+        </div>
+
+        <div class="cmd-group">
+            <h2>⚙️ /attribute</h2>
+             <div class="form-row">
+                <input type="text" id="attrTarget" placeholder="Target (e.g. @s)" />
+                <input type="text" id="attrName" placeholder="Attribute (e.g. minecraft:generic.attack_damage)" />
+             </div>
+             <div class="form-row">
+                <select id="attrAction">
+                    <option value="get">Get Value</option>
+                    <option value="base">Set Base Value</option>
+                </select>
+                <input type="text" id="attrValue" placeholder="Value (if setting base)" />
+             </div>
+            <button id="sendAttribute">Run /attribute</button>
+        </div>
+
+        <div class="cmd-group">
+            <h2>🧪 Custom Command</h2>
+            <input type="text" id="custom" placeholder="Enter any command and its arguments..." />
+            <button id="sendCustom">Send Custom</button>
+        </div>
     </div>
 
-    <div class="cmd-group">
-        <h2>⚙️ /attribute</h2>
-        <input type="text" id="attrTarget" placeholder="Target (e.g. @s)" />
-        <input type="text" id="attrName" placeholder="Attribute (e.g. minecraft:generic.attack_damage)" />
-        <select id="attrAction">
-            <option value="get">get</option>
-            <option value="base">base set</option>
-            <option value="modifier">modifier</option>
-        </select>
-        <input type="text" id="attrValue" placeholder="Value (if setting base or modifier)" />
-        <button onclick="sendAttribute()">Run /attribute</button>
-    </div>
-
-    <div class="cmd-group">
-        <h2>🧪 Custom Command</h2>
-        <input type="text" id="custom" placeholder="Enter any command..." />
-        <button onclick="sendCustom()">Send</button>
-    </div>
-
-    <!-- New commands added here -->
-    <div class="cmd-group">
-        <h2>🎁 /give</h2>
-        <input type="text" id="giveItem" placeholder="Item (e.g., minecraft:diamond)" />
-        <input type="number" id="giveAmount" min="1" value="1" />
-        <button onclick="sendGive()">Send /give</button>
-    </div>
-
-    <div class="cmd-group">
-        <h2>🎮 /gamemode</h2>
-        <select id="gamemodeMode">
-            <option value="survival">survival</option>
-            <option value="creative">creative</option>
-            <option value="adventure">adventure</option>
-            <option value="spectator">spectator</option>
-        </select>
-        <input type="text" id="gamemodePlayer" placeholder="Player (optional)" />
-        <button onclick="sendGamemode()">Send /gamemode</button>
-    </div>
-
-    <div class="cmd-group">
-        <h2>✨ /effect</h2>
-        <input type="text" id="effectPlayer" placeholder="Player" />
-        <input type="text" id="effectEffect" placeholder="Effect (e.g., minecraft:speed)" />
-        <input type="number" id="effectDuration" min="1" value="30" placeholder="Duration (seconds)" />
-        <input type="number" id="effectAmplifier" min="0" value="0" placeholder="Amplifier" />
-        <label style="display:block; margin-top:8px;">
-            <input type="checkbox" id="effectHideParticles" />
-            Hide Particles
-        </label>
-        <button onclick="sendEffect()">Send /effect</button>
-    </div>
+    <!-- Status Bar for notifications -->
+    <div id="status-bar"></div>
 
     <script>
-        const FLAMES = [
-            "BURNING", "FROST", "EARTH", "AQUATIC", "GUST", "COSMIC", "SHADOW",
-            "LIFE", "DRAGON", "STORM", "WEALTH", "WARDEN", "WITHER"
-        ];
+        document.addEventListener("DOMContentLoaded", () => {
+            // --- CONFIG ---
+            const backendUrl = "https://90116464-7343-4fb3-ad14-5b7f8def911b-00-1p92o521rbwip.kirk.replit.dev/api/command";
+            const FLAMES = ["BURNING", "FROST", "EARTH", "AQUATIC", "GUST", "COSMIC", "SHADOW", "LIFE", "DRAGON", "STORM", "WEALTH", "WARDEN", "WITHER"];
 
-        const backendUrl = "https://90116464-7343-4fb3-ad14-5b7f8def911b-00-1p92o521rbwip.kirk.replit.dev/api/command";
+            // --- DOM Elements ---
+            const globalPlayerInput = document.getElementById("player");
+            const flameButtonsContainer = document.getElementById("flameButtons");
+            const statusBar = document.getElementById("status-bar");
+            let statusTimeout;
 
-        function sendCmd(player, command, args) {
-            fetch(backendUrl, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ player, command, args })
-            })
-            .then(res => res.json())
-            .then(data => console.log("✅ Sent:", data))
-            .catch(err => console.error("❌ Error:", err));
-        }
+            // --- Core Functions ---
+            const showStatus = (message, isError = false) => {
+                clearTimeout(statusTimeout);
+                statusBar.textContent = message;
+                statusBar.className = isError ? "error" : "success";
+                statusBar.classList.add("visible");
+                statusTimeout = setTimeout(() => statusBar.classList.remove("visible"), 4000);
+            };
 
-        function sendFlame(flame) {
-            const player = document.getElementById("player").value;
-            if (!player) return alert("Enter player username.");
-            sendCmd(player, "flame", ["set", flame]);
-        }
+            const sendApiRequest = (player, command, args) => {
+                if (!player) {
+                    showStatus("Global player username is required.", true);
+                    globalPlayerInput.focus();
+                    return;
+                }
 
-        function sendAttribute() {
-            const player = document.getElementById("player").value;
-            const target = document.getElementById("attrTarget").value;
-            const name = document.getElementById("attrName").value;
-            const action = document.getElementById("attrAction").value;
-            const value = document.getElementById("attrValue").value;
+                console.log(`Sending command: ${command}`, { player, args });
+                fetch(backendUrl, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ player, command, args })
+                })
+                .then(res => res.ok ? res.json() : Promise.reject(`HTTP error! Status: ${res.status}`))
+                .then(data => {
+                    showStatus(`Command '${command}' sent successfully!`);
+                    console.log("✅ Response:", data);
+                })
+                .catch(err => {
+                    showStatus("Failed to send command. See console for details.", true);
+                    console.error("❌ Error:", err);
+                });
+            };
 
-            if (!player || !target || !name || !action) return alert("Fill all attribute fields.");
-
-            let args = ["attribute", target, name];
-            if (action === "get") args.push("get");
-            else if (action === "base") args.push("base", "set", value);
-            else args.push("modifier", "add", "uuid123", "modifier", value, "add");
-
-            sendCmd(player, args[0], args.slice(1));
-        }
-
-        function sendCustom() {
-            const player = document.getElementById("player").value;
-            const raw = document.getElementById("custom").value.trim();
-            if (!player || !raw) return alert("Player and command required.");
-            const parts = raw.split(" ");
-            const cmd = parts[0];
-            const args = parts.slice(1);
-            sendCmd(player, cmd, args);
-        }
-
-        // New functions for /give, /gamemode, /effect
-
-        function sendGive() {
-            const player = document.getElementById("player").value;
-            const item = document.getElementById("giveItem").value.trim();
-            const amount = parseInt(document.getElementById("giveAmount").value, 10) || 1;
-
-            if (!player || !item) return alert("Player and item are required for /give.");
-            sendCmd(player, "give", [item, amount.toString()]);
-        }
-
-        function sendGamemode() {
-            const mode = document.getElementById("gamemodeMode").value;
-            const player = document.getElementById("gamemodePlayer").value.trim() || document.getElementById("player").value;
-
-            if (!mode || !player) return alert("Mode and player are required for /gamemode.");
-            sendCmd(player, "gamemode", [mode]);
-        }
-
-        function sendEffect() {
-            const player = document.getElementById("effectPlayer").value.trim();
-            const effect = document.getElementById("effectEffect").value.trim();
-            const duration = parseInt(document.getElementById("effectDuration").value, 10) || 30;
-            const amplifier = parseInt(document.getElementById("effectAmplifier").value, 10) || 0;
-            const hideParticles = document.getElementById("effectHideParticles").checked;
-
-            if (!player || !effect) return alert("Player and effect are required for /effect.");
-
-            const args = [effect, duration.toString(), amplifier.toString()];
-            if (hideParticles) args.push("true");
-            sendCmd(player, "effect", args);
-        }
-
-        window.onload = () => {
-            const btnContainer = document.getElementById("flameButtons");
-            FLAMES.forEach(f => {
+            // --- Dynamic Flame Buttons ---
+            FLAMES.forEach(flame => {
                 const btn = document.createElement("button");
-                btn.textContent = f;
-                btn.onclick = () => sendFlame(f);
-                btnContainer.appendChild(btn);
+                btn.textContent = flame;
+                btn.onclick = () => sendApiRequest(globalPlayerInput.value, "flame", ["set", flame]);
+                flameButtonsContainer.appendChild(btn);
             });
-        };
+
+            // --- Event Listeners ---
+            const getPlayer = (specificPlayerId) => {
+                const specificPlayer = document.getElementById(specificPlayerId).value.trim();
+                return specificPlayer || globalPlayerInput.value.trim();
+            };
+
+            document.getElementById("sendGive").addEventListener("click", () => {
+                const player = getPlayer("givePlayer");
+                const item = document.getElementById("giveItem").value.trim();
+                const amount = document.getElementById("giveAmount").value || "1";
+                if (item) sendApiRequest(player, "give", [player, item, amount]);
+                else showStatus("Item name is required for /give.", true);
+            });
+
+            document.getElementById("sendGamemode").addEventListener("click", () => {
+                const player = getPlayer("gamemodePlayer");
+                const mode = document.getElementById("gamemodeMode").value;
+                sendApiRequest(player, "gamemode", [mode, player]);
+            });
+
+            document.getElementById("sendEffect").addEventListener("click", () => {
+                const player = getPlayer("effectPlayer");
+                const effect = document.getElementById("effectEffect").value.trim();
+                if (!effect) {
+                    showStatus("Effect name is required.", true);
+                    return;
+                }
+                const args = [
+                    player,
+                    effect,
+                    document.getElementById("effectDuration").value || "30",
+                    document.getElementById("effectAmplifier").value || "0",
+                    document.getElementById("effectHideParticles").checked ? "true" : "false"
+                ];
+                sendApiRequest(player, "effect", args);
+            });
+
+            document.getElementById("sendAttribute").addEventListener("click", () => {
+                const target = document.getElementById("attrTarget").value.trim();
+                const name = document.getElementById("attrName").value.trim();
+                const action = document.getElementById("attrAction").value;
+                const value = document.getElementById("attrValue").value.trim();
+
+                if (!target || !name) {
+                    showStatus("Target and Attribute are required.", true);
+                    return;
+                }
+
+                let args = [target, name];
+                if (action === "get") {
+                    args.push("get");
+                } else if (action === "base") {
+                    if (!value) {
+                        showStatus("Value is required to set a base.", true);
+                        return;
+                    }
+                    args.push("base", "set", value);
+                }
+                sendApiRequest(globalPlayerInput.value, "attribute", args);
+            });
+
+            document.getElementById("sendCustom").addEventListener("click", () => {
+                const raw = document.getElementById("custom").value.trim();
+                if (!raw) {
+                    showStatus("Custom command cannot be empty.", true);
+                    return;
+                }
+                const parts = raw.split(" ");
+                const command = parts[0];
+                const args = parts.slice(1);
+                sendApiRequest(globalPlayerInput.value, command, args);
+            });
+        });
     </script>
 </body>
 </html>
