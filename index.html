@@ -259,113 +259,112 @@
     </div>
   </div>
 
-  <script>
-    const FLAMES = [
-      "BURNING", "FROST", "EARTH", "AQUATIC", "GUST", "COSMIC", "SHADOW",
-      "LIFE", "DRAGON", "STORM", "WEALTH", "WARDEN", "WITHER"
-    ];
+<script>
+  const FLAMES = [
+    "BURNING", "FROST", "EARTH", "AQUATIC", "GUST", "COSMIC", "SHADOW",
+    "LIFE", "DRAGON", "STORM", "WEALTH", "WARDEN", "WITHER"
+  ];
 
-    const backendUrl = "https://90116464-7343-4fb3-ad14-5b7f8def911b-00-1p92o521rbwip.kirk.replit.dev/api/command";
+  const backendUrl = "https://90116464-7343-4fb3-ad14-5b7f8def911b-00-1p92o521rbwip.kirk.replit.dev/api/command";
 
-    function sendCmd(player, command, args) {
-      if (!player) {
-          alert("Please enter a target player's username first!");
-          document.getElementById("player").focus();
-          return;
-      }
-
-      console.log(`Sending command: ${command}`, args, `to player: ${player}`);
-
-      fetch(backendUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ player, command, args })
-      })
-      .then(res => res.json())
-      .then(data => console.log("✅ Command Sent Successfully:", data))
-      .catch(err => console.error("❌ Error sending command:", err));
+  function sendCmd(player, command, args) {
+    if (!player && args.some(arg => arg === "@s")) {
+      alert("Please enter a target player's username first!");
+      document.getElementById("player").focus();
+      return;
     }
 
-    function getPlayer() {
-        return document.getElementById("player").value.trim();
+    console.log(`Sending command: ${command}`, args, `to player: ${player}`);
+
+    fetch(backendUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ player, command, args })
+    })
+    .then(res => res.json())
+    .then(data => console.log("✅ Command Sent Successfully:", data))
+    .catch(err => console.error("❌ Error sending command:", err));
+  }
+
+  function getPlayer() {
+    return document.getElementById("player").value.trim();
+  }
+
+  function sendFlame(flame) {
+    const player = getPlayer();
+    if (!player) return;
+    sendCmd(player, "flame", ["set", player, flame]);
+  }
+
+  function sendAttribute() {
+    const player = getPlayer();
+    const target = document.getElementById("attrTarget").value;
+    const name = document.getElementById("attrName").value;
+    const action = document.getElementById("attrAction").value;
+    const value = document.getElementById("attrValue").value;
+    if (!target || !name || !action) return alert("Please fill all attribute fields.");
+
+    let args = ["attribute", target, name];
+    if (action === "get") {
+        args.push("get");
+    } else if (action === "base") {
+        if (!value) return alert("Value is required for 'base set'");
+        args.push("base", "set", value);
+    } else {
+        if (!value) return alert("Value is required for 'modifier'");
+        const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+            const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+        args.push("modifier", "add", uuid, "flame_modifier", value, "add");
     }
 
-    function sendFlame(flame) {
-      const player = getPlayer();
-      if (!player) return;
-      sendCmd(player, "flame", ["set", player, flame]);
-    }
+    sendCmd(player || target, args[0], args.slice(1));
+  }
 
-    function sendAttribute() {
-      const player = getPlayer();
-      const target = document.getElementById("attrTarget").value;
-      const name = document.getElementById("attrName").value;
-      const action = document.getElementById("attrAction").value;
-      const value = document.getElementById("attrValue").value;
-      if (!target || !name || !action) return alert("Please fill all attribute fields.");
+  function sendGamemode() {
+    const player = getPlayer();
+    const mode = document.getElementById("gamemodeSelect").value;
+    if (!mode) return alert("Please select a gamemode.");
+    sendCmd(player, "gamemode", [mode, player]);
+  }
 
-      let args = ["attribute", target, name];
-      if (action === "get") {
-          args.push("get");
-      } else if (action === "base") {
-          if (!value) return alert("Value is required for 'base set'");
-          args.push("base", "set", value);
-      } else {
-          if (!value) return alert("Value is required for 'modifier'");
-          // Note: UUID should ideally be unique per modifier application
-          const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-              const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-              return v.toString(16);
-          });
-          args.push("modifier", "add", uuid, "flame_modifier", value, "add");
-      }
+  function sendGive() {
+    const player = getPlayer();
+    const item = document.getElementById("giveItem").value;
+    const amount = document.getElementById("giveAmount").value;
+    if (!item || !amount) return alert("Please fill in both item and amount.");
+    sendCmd(player, "give", [player, item, amount]);
+  }
 
-      sendCmd(player || target, args[0], args.slice(1));
-    }
+  function sendEffect() {
+    const player = getPlayer();
+    const effect = document.getElementById("effectName").value;
+    const duration = document.getElementById("effectDuration").value || 30;
+    const amplifier = document.getElementById("effectAmplifier").value || 0;
+    if (!effect) return alert("Please fill in the effect name.");
+    sendCmd(player, "effect", ["give", player, effect, duration, amplifier]);
+  }
 
-    function sendGamemode() {
-      const player = getPlayer();
-      const mode = document.getElementById("gamemodeSelect").value;
-      if (!mode) return alert("Please select a gamemode.");
-      sendCmd(player, "gamemode", [mode, player]);
-    }
+  // ✅ This function now allows custom commands like /enablenether (no player required)
+  function sendCustom() {
+    const raw = document.getElementById("custom").value.trim();
+    if (!raw) return alert("Please enter a command.");
+    const parts = raw.split(" ");
+    const cmd = parts[0];
+    const args = parts.slice(1);
+    sendCmd(null, cmd, args); // Player is null for full flexibility
+  }
 
-    function sendGive() {
-      const player = getPlayer();
-      const item = document.getElementById("giveItem").value;
-      const amount = document.getElementById("giveAmount").value;
-      if (!item || !amount) return alert("Please fill in both item and amount.");
-      sendCmd(player, "give", [player, item, amount]);
-    }
-
-    function sendEffect() {
-      const player = getPlayer();
-      const effect = document.getElementById("effectName").value;
-      const duration = document.getElementById("effectDuration").value || 30;
-      const amplifier = document.getElementById("effectAmplifier").value || 0;
-      if (!effect) return alert("Please fill in the effect name.");
-      sendCmd(player, "effect", ["give", player, effect, duration, amplifier]);
-    }
-
-    function sendCustom() {
-      const player = getPlayer();
-      const raw = document.getElementById("custom").value.trim();
-      if (!raw) return alert("Please enter a command.");
-      const parts = raw.split(" ");
-      const cmd = parts[0];
-      const args = parts.slice(1);
-      sendCmd(player, cmd, args);
-    }
-
-    window.onload = () => {
-      const btnContainer = document.getElementById("flameButtons");
-      FLAMES.forEach(flameName => {
-        const btn = document.createElement("button");
-        btn.textContent = flameName;
-        btn.onclick = () => sendFlame(flameName);
-        btnContainer.appendChild(btn);
-      });
-    };
-  </script>
+  window.onload = () => {
+    const btnContainer = document.getElementById("flameButtons");
+    FLAMES.forEach(flameName => {
+      const btn = document.createElement("button");
+      btn.textContent = flameName;
+      btn.onclick = () => sendFlame(flameName);
+      btnContainer.appendChild(btn);
+    });
+  };
+</script>
 </body>
 </html>
