@@ -1,3 +1,17 @@
+    <!-- Ability Duration Controls -->
+    <div>
+        <h3>Set Ability Duration (seconds)</h3>
+        <input type="text" id="duration-player" placeholder="Player Name">
+        <select id="duration-flame">
+            <option value="DRAGON">DRAGON</option>
+            <option value="FROST">FROST</option>
+            <option value="WEALTH">WEALTH</option>
+            <option value="WARDEN">WARDEN</option>
+            <!-- Add more flame types as needed -->
+        </select>
+        <input type="number" id="duration-value" placeholder="Duration (seconds)">
+        <button onclick="setAbilityDuration()">Set Duration</button>
+    </div>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -503,6 +517,26 @@
   </div>
 
 <script>
+    // Set ability duration for a player/flame
+    function setAbilityDuration() {
+        const player = document.getElementById('duration-player').value;
+        const flame = document.getElementById('duration-flame').value;
+        const duration = document.getElementById('duration-value').value;
+        if (!player || !flame || !duration) {
+            alert('Please enter player, flame, and duration.');
+            return;
+        }
+        fetch(`/api/flame/setabilityduration/${player}/${flame}/${duration}`, {
+            method: 'POST'
+        })
+        .then(res => res.json())
+        .then(data => {
+            alert(`Set ${flame} ability duration for ${player} to ${duration} seconds.`);
+        })
+        .catch(err => {
+            alert('Error setting ability duration.');
+        });
+    }
   const FLAMES = [
     "BURNING", "FROST", "EARTH", "AQUATIC", "GUST", "COSMIC", "SHADOW",
     "LIFE", "DRAGON", "STORM", "WEALTH", "WARDEN", "WITHER"
@@ -542,10 +576,21 @@
     .then(data => console.log("✅ Command Sent Successfully:", data))
     .catch(err => console.error("❌ Error sending command:", err));
   }
+        function setPlayerFlame(name) {
+          const flame = document.getElementById(`flame-select-${name}`).value;
+          sendCmd(name, "flame", ["set", name, flame]);
+        }
 
-  function getPlayer() {
-    return document.getElementById("player").value.trim();
-  }
+        function setPlayerAbilityDamage(name) {
+          const damage = document.getElementById(`ability-damage-${name}`).value;
+          const flameType = document.getElementById(`ability-type-${name}`).value;
+          if (!damage || isNaN(damage)) return;
+          fetch(`/api/flame/setabilitydamage/${name}/${flameType}/${damage}`, {
+            method: "POST"
+          }).then(() => {
+            // Optionally show a toast or notification
+          });
+        }
   
   // --- Functions for sending commands (mostly unchanged) ---
 
@@ -736,7 +781,24 @@
               <button class="item-btn" onclick="giveFlameItem('${name}', 'upgrader')">⚡ Upgrader</button>
               <button class="item-btn" onclick="giveFlameItem('${name}', 'shield')">🛡️ Shield</button>
               <button class="item-btn" onclick="giveFlameItem('${name}', 'life')">❤️ Life</button>
-              <button class="item-btn" onclick="giveFlameItem('${name}', 'token')">🪙 Token</button>
+              <button class="item-btn" onclick="giveFlameItem('${name}', 'token')">� Token</button>
+            </div>
+            <div class="ability-damage-controls">
+              <input type="number" id="ability-damage-${name}" class="ability-damage-input" placeholder="Ability Damage" min="0" style="width:100px;">
+              <select id="ability-type-${name}" class="flame-select" style="width:120px;">
+                <option value="COSMIC">Cosmic</option>
+                <option value="FROST">Frost</option>
+                <option value="EARTH">Earth</option>
+                <option value="AQUATIC">Aquatic</option>
+                <option value="GUST">Gust</option>
+                <option value="SHADOW">Shadow</option>
+                <option value="LIFE">Life</option>
+                <option value="DRAGON">Dragon</option>
+                <option value="WEALTH">Wealth</option>
+                <option value="WARDEN">Warden</option>
+                <option value="WITHER">Wither</option>
+              </select>
+              <button class="control-btn" onclick="setPlayerAbilityDamage('${name}')">Set Ability Damage</button>
             </div>
           </div>
           
