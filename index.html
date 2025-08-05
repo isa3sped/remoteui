@@ -484,6 +484,17 @@
         </div>
     
         <div class="cmd-group">
+          <h2>🌦️ Weather Control</h2>
+          <select id="weatherSelect">
+            <option value="clear">☀️ Clear</option>
+            <option value="rain">🌧️ Rain</option>
+            <option value="thunder">⛈️ Thunder</option>
+          </select>
+          <input type="number" id="weatherDuration" placeholder="Duration (seconds, optional)" />
+          <button onclick="sendWeather()">Set Weather</button>
+        </div>
+
+        <div class="cmd-group">
           <h2>💻 Custom Command</h2>
           <input type="text" id="custom" placeholder="Enter any command..." />
           <button onclick="sendCustom()">Send</button>
@@ -589,6 +600,19 @@
     const amplifier = document.getElementById("effectAmplifier").value || 0;
     if (!effect) return alert("Please fill in the effect name.");
     sendCmd(player, "effect", ["give", player, effect, String(duration), String(amplifier)]);
+  }
+
+  function sendWeather() {
+    const weather = document.getElementById("weatherSelect").value;
+    const duration = document.getElementById("weatherDuration").value;
+    
+    let args = [weather];
+    if (duration && duration > 0) {
+      args.push(String(duration));
+    }
+    
+    sendCmd(null, "weather", args);
+    console.log(`Setting weather to ${weather}${duration ? ` for ${duration} seconds` : ''}`);
   }
 
   function sendCustom() {
