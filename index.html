@@ -517,6 +517,11 @@
   </div>
 
 <script>
+    // Global helper function - MUST be defined first
+    function getPlayer() {
+        return document.getElementById("player").value.trim();
+    }
+
     // Set ability duration for a player/flame
     function setAbilityDuration() {
         const player = document.getElementById('duration-player').value;
@@ -549,10 +554,6 @@
 
   const commandApiUrl = "https://90116464-7343-4fb3-ad14-5b7f8def911b-00-1p92o521rbwip.kirk.replit.dev/api/command";
   const coordsApiUrl = "https://90116464-7343-4fb3-ad14-5b7f8def911b-00-1p92o521rbwip.kirk.replit.dev/api/coords";
-
-  function getPlayer() {
-    return document.getElementById("player").value.trim();
-  }
 
   function sendCmd(player, command, args) {
     if (!player && args.some(arg => arg === "@s" || arg === getPlayer())) {
