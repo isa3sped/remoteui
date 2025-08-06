@@ -1,17 +1,4 @@
-    <!-- Ability Duration Controls -->
-    <div>
-        <h3>Set Ability Duration (seconds)</h3>
-        <input type="text" id="duration-player" placeholder="Player Name">
-        <select id="duration-flame">
-            <option value="DRAGON">DRAGON</option>
-            <option value="FROST">FROST</option>
-            <option value="WEALTH">WEALTH</option>
-            <option value="WARDEN">WARDEN</option>
-            <!-- Add more flame types as needed -->
-        </select>
-        <input type="number" id="duration-value" placeholder="Duration (seconds)">
-        <button onclick="setAbilityDuration()">Set Duration</button>
-    </div>
+html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -441,6 +428,22 @@
       <h2>👤 Target Player</h2>
       <input type="text" id="player" placeholder="Enter player username (e.g., Notch)" />
   </div>
+  
+  <!-- Ability Duration Controls -->
+  <div class="cmd-group">
+      <h3>Set Ability Duration (seconds)</h3>
+      <input type="text" id="duration-player" placeholder="Player Name">
+      <select id="duration-flame">
+          <option value="DRAGON">DRAGON</option>
+          <option value="FROST">FROST</option>
+          <option value="WEALTH">WEALTH</option>
+          <option value="WARDEN">WARDEN</option>
+          <!-- Add more flame types as needed -->
+      </select>
+      <input type="number" id="duration-value" placeholder="Duration (seconds)">
+      <button onclick="setAbilityDuration()">Set Duration</button>
+  </div>
+
 
   <!-- ======== START: NEW PLAYER DATA SECTION ======== -->
   <div class="section-container player-data-group">
@@ -531,29 +534,33 @@
             alert('Please enter player, flame, and duration.');
             return;
         }
-        fetch(`/api/flame/setabilityduration/${player}/${flame}/${duration}`, {
+        // UPDATED URL
+        fetch(`https://backendui-jlwg.onrender.com/api/flame/setabilityduration/${player}/${flame}/${duration}`, {
             method: 'POST'
         })
         .then(res => res.json())
         .then(data => {
             alert(`Set ${flame} ability duration for ${player} to ${duration} seconds.`);
+            showNotification(`Set ${flame} ability duration for ${player} to ${duration}s.`, 'success');
         })
         .catch(err => {
             alert('Error setting ability duration.');
+            showNotification('Error setting ability duration.', 'error');
         });
     }
+    
   const FLAMES = [
     "BURNING", "FROST", "EARTH", "AQUATIC", "GUST", "COSMIC", "SHADOW",
     "LIFE", "DRAGON", "STORM", "WEALTH", "WARDEN", "WITHER"
   ];
   
   // --- IMPORTANT ---
-  // Since your backend is now secure, you MUST provide the same secret token here.
-  // This token is required to fetch player data and to send commands.
+  // The secret token is not used in the current code but kept for potential future use.
   const SECRET_TOKEN = "your_very_secret_password_here";
 
-  const commandApiUrl = "https://90116464-7343-4fb3-ad14-5b7f8def911b-00-1p92o521rbwip.kirk.replit.dev/api/command";
-  const coordsApiUrl = "https://90116464-7343-4fb3-ad14-5b7f8def911b-00-1p92o521rbwip.kirk.replit.dev/api/coords";
+  // --- UPDATED API URLS ---
+  const commandApiUrl = "https://backendui-jlwg.onrender.com/api/command";
+  const coordsApiUrl = "https://backendui-jlwg.onrender.com/api/coords";
 
   function sendCmd(player, command, args) {
     if (!player && args.some(arg => arg === "@s" || arg === getPlayer())) {
@@ -589,10 +596,13 @@
           const damage = document.getElementById(`ability-damage-${name}`).value;
           const flameType = document.getElementById(`ability-type-${name}`).value;
           if (!damage || isNaN(damage)) return;
-          fetch(`/api/flame/setabilitydamage/${name}/${flameType}/${damage}`, {
+          // UPDATED URL
+          fetch(`https://backendui-jlwg.onrender.com/api/flame/setabilitydamage/${name}/${flameType}/${damage}`, {
             method: "POST"
           }).then(() => {
-            // Optionally show a toast or notification
+            showNotification(`Set ${flameType} ability damage for ${name} to ${damage}.`, 'success');
+          }).catch(() => {
+            showNotification('Error setting ability damage.', 'error');
           });
         }
   
@@ -785,7 +795,7 @@
               <button class="item-btn" onclick="giveFlameItem('${name}', 'upgrader')">⚡ Upgrader</button>
               <button class="item-btn" onclick="giveFlameItem('${name}', 'shield')">🛡️ Shield</button>
               <button class="item-btn" onclick="giveFlameItem('${name}', 'life')">❤️ Life</button>
-              <button class="item-btn" onclick="giveFlameItem('${name}', 'token')">� Token</button>
+              <button class="item-btn" onclick="giveFlameItem('${name}', 'token')">🪙 Token</button>
             </div>
             <div class="ability-damage-controls">
               <input type="number" id="ability-damage-${name}" class="ability-damage-input" placeholder="Ability Damage" min="0" style="width:100px;">
